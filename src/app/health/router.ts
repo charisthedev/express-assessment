@@ -1,4 +1,5 @@
 import { Router, type Router as ExpressRouter } from 'express';
+import { asyncHandler } from '../../common/middleware/async-handler.middleware';
 import { HealthController } from './health.controller';
 import { HealthRepository } from './health.repository';
 import { HealthService } from './health.service';
@@ -25,6 +26,6 @@ const healthController = new HealthController(healthService);
  *             schema:
  *               $ref: '#/components/schemas/HealthResponse'
  */
-router.get('/health', healthController.check);
+router.get('/health', asyncHandler(healthController.check));
 
 export { router as healthRouter };

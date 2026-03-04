@@ -1,4 +1,5 @@
 import { Router, type Router as ExpressRouter } from 'express';
+import { asyncHandler } from '../../common/middleware/async-handler.middleware';
 import { validate } from '../../common/middleware/validate.middleware';
 import { AppDataSource } from '../../database/data-source';
 import {
@@ -40,7 +41,7 @@ const noteController = new NoteController(noteService);
  *       400:
  *         description: Validation error
  */
-router.post('/notes', validate(createNoteSchema), noteController.create);
+router.post('/notes', validate(createNoteSchema), asyncHandler(noteController.create));
 
 /**
  * @openapi
@@ -73,7 +74,7 @@ router.post('/notes', validate(createNoteSchema), noteController.create);
  *       400:
  *         description: Validation error
  */
-router.get('/notes', validate(noteListQuerySchema, 'query'), noteController.findAll);
+router.get('/notes', validate(noteListQuerySchema, 'query'), asyncHandler(noteController.findAll));
 
 /**
  * @openapi
@@ -99,7 +100,7 @@ router.get('/notes', validate(noteListQuerySchema, 'query'), noteController.find
  *       404:
  *         description: Note not found
  */
-router.get('/notes/:id', validate(noteIdParamSchema, 'params'), noteController.findById);
+router.get('/notes/:id', validate(noteIdParamSchema, 'params'), asyncHandler(noteController.findById));
 
 /**
  * @openapi
@@ -131,7 +132,12 @@ router.get('/notes/:id', validate(noteIdParamSchema, 'params'), noteController.f
  *       404:
  *         description: Note not found
  */
-router.patch('/notes/:id', validate(noteIdParamSchema, 'params'), validate(updateNoteSchema), noteController.update);
+router.patch(
+  '/notes/:id',
+  validate(noteIdParamSchema, 'params'),
+  validate(updateNoteSchema),
+  asyncHandler(noteController.update)
+);
 
 /**
  * @openapi
@@ -153,6 +159,6 @@ router.patch('/notes/:id', validate(noteIdParamSchema, 'params'), validate(updat
  *       404:
  *         description: Note not found
  */
-router.delete('/notes/:id', validate(noteIdParamSchema, 'params'), noteController.delete);
+router.delete('/notes/:id', validate(noteIdParamSchema, 'params'), asyncHandler(noteController.delete));
 
 export { router as noteRouter };
