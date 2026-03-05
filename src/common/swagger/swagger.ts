@@ -1,6 +1,4 @@
 import swaggerJsdoc, { Options } from 'swagger-jsdoc';
-import { env } from '../../config/env';
-import { API_BASE_PATH } from '../../app/router/AppRouter';
 
 const options: Options = {
   definition: {
@@ -12,8 +10,8 @@ const options: Options = {
     },
     servers: [
       {
-        url: `http://localhost:${env.port}${API_BASE_PATH}`,
-        description: 'Local server'
+        url: 'https://express-assessment.onrender.com/api',
+        description: 'Production server'
       }
     ],
     components: {
