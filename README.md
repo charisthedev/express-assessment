@@ -1,154 +1,180 @@
-# Backend Boilerplate (Service-Oriented Foundation)
+# Notes Task API
 
-Production-ready backend foundation using Node.js, TypeScript, Express, PostgreSQL, TypeORM, Joi, Swagger (OpenAPI 3), dotenv, and pino.
+Express.js based API for notes management.
 
 ## Tech Stack
 
 - Node.js + TypeScript
-- Express.js
+- Express 4
 - PostgreSQL
 - TypeORM
-- Joi validation
-- Swagger (`swagger-jsdoc` + `swagger-ui-express`)
-- dotenv
-- pino + pino-http
-- CORS
-- UUID support
+- Joi
+- Swagger (OpenAPI)
+- pino / pino-http
+- Jest + Supertest
+
+## API Base URL
+
+- `http://localhost:3000/api`
+
+## API Documentation
+
+- Swagger UI: `http://localhost:3000/api-docs`
+
+### Endpoints
+
+1. `POST /api/notes`
+- Request:
+```json
+{
+  "title": "Meeting notes",
+  "content": "Discuss roadmap and milestones"
+}
+```
+- Success `201`:
+```json
+{
+  "id": "11111111-1111-4111-8111-111111111111",
+  "title": "Meeting notes",
+  "content": "Discuss roadmap and milestones",
+  "createdAt": "2026-03-05T00:00:00.000Z",
+  "updatedAt": "2026-03-05T00:00:00.000Z"
+}
+```
+
+2. `GET /api/notes`
+- Success `200`:
+```json
+{
+  "data": [
+    {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "title": "Meeting notes",
+      "content": "Discuss roadmap and milestones",
+      "createdAt": "2026-03-05T00:00:00.000Z",
+      "updatedAt": "2026-03-05T00:00:00.000Z"
+    }
+  ],
+  "meta": {
+    "hasNextPage": false,
+    "nextCursor": null
+  }
+}
+```
+
+3. `GET /api/notes/:id`
+- Success `200`: returns note object
+- Not found `404`:
+```json
+{
+  "status": "error",
+  "message": "Note not found",
+  "requestId": "..."
+}
+```
+
+4. `PUT /api/notes/:id`
+- Request:
+```json
+{
+  "title": "Updated title"
+}
+```
+- Success `200`: returns updated note
+
+5. `DELETE /api/notes/:id`
+- Success `204` (empty body)
+- Not found `404`: same error shape as above
+
+## Error Response Format
+
+```json
+{
+  "status": "error",
+  "message": "Validation error",
+  "details": ["\"title\" is required"],
+  "requestId": "..."
+}
+```
 
 ## Project Structure
 
 ```text
 src/
 ├── app/
+│   ├── health/
+│   ├── note/
 │   ├── app.ts
-│   ├── application.bootstrap.ts
-│   ├── http.server.ts
-│   ├── router/
-│   │   ├── AppRouter.ts
-│   │   └── index.ts
-│   └── health/
-│       ├── entities/
-│       │   └── HealthStatusEntity.ts
-│       ├── health.controller.ts
-│       ├── health.service.ts
-│       └── health.repository.ts
+│   └── router/
 ├── common/
 │   ├── errors/
-│   │   └── AppError.ts
-│   ├── logger/
-│   │   ├── ILogger.ts
-│   │   └── logger.ts
 │   ├── middleware/
-│   │   ├── error.middleware.ts
-│   │   ├── request-id.middleware.ts
-│   │   └── validate.middleware.ts
-│   ├── swagger/
-│   │   └── swagger.ts
-│   └── types/
-│       └── express.d.ts
-├── database/
-│   ├── data-source.ts
-│   ├── seed.ts
-│   ├── migrations/
-│   └── seed/
+│   ├── logger/
+│   └── services/
 ├── config/
-│   └── env.ts
+├── database/
+│   ├── migrations/
+│   ├── seed/
+│   └── data-source.ts
 └── index.ts
 ```
 
 ## Setup
 
 1. Install dependencies:
-
 ```bash
 pnpm install
 ```
 
-2. Copy environment file:
-
+2. Create env file:
 ```bash
 cp .env.example .env
 ```
 
-3. Update `.env` with your PostgreSQL credentials.
-
-4. Run development server:
-
-```bash
-pnpm dev
+3. Configure `.env`:
+```env
+NODE_ENV=development
+PORT=3000
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_NAME=notes_task_app
+DB_SSL=false
+DB_LOGGING=false
 ```
 
-## Build and Run
-
-Build:
-
-```bash
-pnpm build
-```
-
-Run compiled app:
-
-```bash
-pnpm start
-```
-
-## Migration Commands
-
-Create empty migration:
-
-```bash
-pnpm migration:create
-```
-
-Generate migration from entity changes:
-
-```bash
-pnpm migration:generate
-```
-
-Run migrations:
-
+4. Run migrations:
 ```bash
 pnpm migration:run
 ```
 
-Revert last migration:
-
+5. Run app:
 ```bash
-pnpm migration:revert
+pnpm dev
 ```
 
-## Seed Command
+## Scripts
 
-Place SQL seed files in `src/database/seed` (for example: `001-initial.sql`, `002-demo-data.sql`).
-Files are executed in filename order inside a single transaction.
+- `pnpm dev` - run in dev mode
+- `pnpm build` - compile TypeScript
+- `pnpm start` - run compiled build
+- `pnpm test` - run unit + integration tests
+- `pnpm test:watch` - test watch mode
+- `pnpm seed` - run TypeORM seeders
 
-Run seeds:
+## Design Decisions and Assumptions
 
-```bash
-pnpm seed
-```
+- API is namespaced under `/api`.
+- `GET /api/notes` uses cursor pagination (`data` + `meta`) for scalability.
+- `PUT /api/notes/:id` supports partial updates in current implementation.
+- Request validation is handled at the route boundary with Joi.
+- Service layer is responsible for business errors (`404` on missing note).
 
-## Swagger
+## Testing Summary
 
-- Swagger UI URL: `http://localhost:3000/api-docs`
-- Health endpoint: `GET /health`
-
-## Architecture Notes
-
-This boilerplate follows an OOP-oriented service architecture with clear separation:
-
-- `app/*`: application layer (controllers, services, repositories, router composition, bootstrap).
-- `common/*`: cross-cutting concerns (middleware, logger abstraction, errors, swagger, request typing).
-- `database/*`: data source, migrations, and seed runner.
-- `config/*`: environment loading and validation.
-
-The current setup intentionally includes only a system health module, with no business domain CRUD modules yet.
-
-## Logging Notes
-
-- Uses `pino` for structured logging.
-- Uses `pino-http` for request lifecycle logs.
-- In development (`NODE_ENV=development`): pretty logs via `pino-pretty`.
-- In production: raw JSON logs suitable for log pipelines.
-- `requestId` is attached to every request and included in error responses and request logs.
+- Unit tests:
+  - `src/app/note/__tests__/note.service.spec.ts`
+  - `src/app/note/__tests__/note.controller.spec.ts`
+- Integration tests:
+  - `tests/notes.spec.ts`

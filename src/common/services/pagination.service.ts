@@ -5,14 +5,14 @@ export interface CursorPaginationQuery {
   limit?: number;
 }
 
-export interface CursorPageInfo {
+export interface CursorPaginationMetadata {
   hasNextPage: boolean;
   nextCursor: string | null;
 }
 
 export interface CursorPaginatedResult<T> {
-  items: T[];
-  pageInfo: CursorPageInfo;
+  data: T[];
+  meta: CursorPaginationMetadata;
 }
 
 export class PaginationService {
@@ -60,7 +60,7 @@ export class PaginationService {
       const entityId = Buffer.from(cursor, 'base64url').toString('utf8');
 
       if (!PaginationService.UUID_REGEX.test(entityId)) {
-        throw new Error('Invalid UUID cursor payload');
+        throw new Error('Invalid cursor');
       }
 
       return entityId;
@@ -78,8 +78,8 @@ export class PaginationService {
     const lastItem = items.at(-1);
 
     return {
-      items,
-      pageInfo: {
+      data: items,
+      meta: {
         hasNextPage,
         nextCursor: hasNextPage && lastItem ? this.encodeCursor(lastItem.id) : null
       }

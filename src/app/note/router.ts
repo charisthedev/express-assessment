@@ -105,7 +105,7 @@ router.get('/notes/:id', validate(noteIdParamSchema, 'params'), asyncHandler(not
 /**
  * @openapi
  * /notes/{id}:
- *   patch:
+ *   put:
  *     summary: Update a note
  *     tags:
  *       - Notes
@@ -132,7 +132,7 @@ router.get('/notes/:id', validate(noteIdParamSchema, 'params'), asyncHandler(not
  *       404:
  *         description: Note not found
  */
-router.patch(
+router.put(
   '/notes/:id',
   validate(noteIdParamSchema, 'params'),
   validate(updateNoteSchema),
